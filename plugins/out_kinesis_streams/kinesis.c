@@ -113,7 +113,17 @@ static int cb_kinesis_init(struct flb_output_instance *ins,
         ctx->custom_endpoint = FLB_FALSE;
     }
 
-    /* Set port (default to 443 if not specified) */
+    /*
+     * Sets the port number for the Kinesis output plugin.
+     *
+     * This function retrieves the value of the "port" property from the input instance and sets it as the port number for the Kinesis output plugin. 
+     * If the "port" property is not found, the default port number 443 is used.
+     *
+     * @param ins The input instance.
+     * @param ctx The Kinesis output plugin context.
+     *
+     * @return None.
+     */
     tmp = flb_output_get_property("port", ins);
     if (tmp) {
         long port;
@@ -124,8 +134,7 @@ static int cb_kinesis_init(struct flb_output_instance *ins,
         }
         else {
             flb_plg_error(ins, "Invalid port number: %s", tmp);
-            flb_free(ctx);
-            return -1;
+            goto error;
         }
     }
     else {
