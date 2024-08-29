@@ -113,6 +113,25 @@ static int cb_kinesis_init(struct flb_output_instance *ins,
         ctx->custom_endpoint = FLB_FALSE;
     }
 
+    /* Set port (default to 443 if not specified) */
+    tmp = flb_output_get_property("port", ins);
+    if (tmp) {
+        long port;
+        char *endptr = NULL;
+        port = strtol(tmp, &endptr, 10);
+        if (*endptr == '\0' && port > 0 && port <= 65535) {
+            ctx->port = (int) port;
+        }
+        else {
+            flb_plg_error(ins, "Invalid port number: %s", tmp);
+            flb_free(ctx);
+            return -1;
+        }
+    }
+    else {
+        ctx->port = 443;
+    }
+
     tmp = flb_output_get_property("sts_endpoint", ins);
     if (tmp) {
         ctx->sts_endpoint = (char *) tmp;
@@ -255,14 +274,14 @@ static int cb_kinesis_init(struct flb_output_instance *ins,
     ctx->kinesis_client->region = (char *) ctx->region;
     ctx->kinesis_client->retry_requests = ctx->retry_requests;
     ctx->kinesis_client->service = "kinesis";
-    ctx->kinesis_client->port = 443;
+    ctx->kinesis_client->port = ctx->port;
     ctx->kinesis_client->flags = 0;
     ctx->kinesis_client->proxy = NULL;
     ctx->kinesis_client->static_headers = &content_type_header;
     ctx->kinesis_client->static_headers_len = 1;
 
     struct flb_upstream *upstream = flb_upstream_create(config, ctx->endpoint,
-                                                        443, FLB_IO_TLS,
+                                                        ctx->port, FLB_IO_TLS,
                                                         ctx->client_tls);
     if (!upstream) {
         flb_plg_error(ctx->ins, "Connection initialization error");
