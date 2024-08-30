@@ -121,8 +121,6 @@ static int cb_kinesis_init(struct flb_output_instance *ins,
      *
      * @param ins The output instance.
      * @param ctx The Kinesis output plugin context.
-     *
-     * @return None.
      */
     flb_plg_debug(ins, "Retrieved port from ins->host.port: %d", ins->host.port);
     
