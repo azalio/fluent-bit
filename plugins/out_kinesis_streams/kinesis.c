@@ -116,35 +116,29 @@ static int cb_kinesis_init(struct flb_output_instance *ins,
     /*
      * Sets the port number for the Kinesis output plugin.
      *
-     * This function retrieves the value of the "port" property from the input instance and sets it as the port number for the Kinesis output plugin. 
-     * If the "port" property is not found, the default port number 443 is used.
+     * This function uses the port number already set in the output instance's host structure.
+     * If the port is not set (0), the default HTTPS port is used.
      *
-     * @param ins The input instance.
+     * @param ins The output instance.
      * @param ctx The Kinesis output plugin context.
      *
      * @return None.
      */
-    tmp = flb_output_get_property("port", ins);
-    flb_plg_debug(ins, "Retrieved port property: %s", tmp ? tmp : "NULL");
+    flb_plg_debug(ins, "Retrieved port from ins->host.port: %d", ins->host.port);
     
-    if (tmp) {
-        long port;
-        char *endptr = NULL;
-        port = strtol(tmp, &endptr, 10);
-        if (*endptr == '\0' && port > 0 && port <= 65535) {
-            ctx->port = (int) port;
-            flb_plg_debug(ins, "Setting port to: %d", ctx->port);
-        }
-        else {
-            flb_plg_error(ins, "Invalid port number: %s", tmp);
-            goto error;
-        }
+    if (ins->host.port >= FLB_KINESIS_MIN_PORT && ins->host.port <= FLB_KINESIS_MAX_PORT) {
+        ctx->port = ins->host.port;
+        flb_plg_debug(ins, "Setting port to: %d", ctx->port);
+    }
+    else if (ins->host.port == 0) {
+        ctx->port = FLB_KINESIS_DEFAULT_HTTPS_PORT;
+        flb_plg_debug(ins, "Port not set. Using default HTTPS port: %d", ctx->port);
     }
     else {
-        ctx->port = 443;
-        flb_plg_debug(ins, "Setting port to default: %d", ctx->port);
+        flb_plg_error(ins, "Invalid port number: %d. Must be between %d and %d", 
+                      ins->host.port, FLB_KINESIS_MIN_PORT, FLB_KINESIS_MAX_PORT);
+        goto error;
     }
-
 
     tmp = flb_output_get_property("log_key", ins);
     if (tmp) {
