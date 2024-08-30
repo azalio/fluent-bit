@@ -131,6 +131,13 @@ static int cb_kinesis_init(struct flb_output_instance *ins,
         ctx->role_arn = tmp;
     }
 
+    tmp = flb_output_get_property("port", ins);
+    if (tmp) {
+        ctx->port = atoi(tmp);
+    } else {
+        ctx->port = FLB_KINESIS_DEFAULT_HTTPS_PORT;
+    }
+
     /* one tls instance for provider, one for cw client */
     ctx->cred_tls = flb_tls_create(FLB_TLS_CLIENT_MODE,
                                    FLB_TRUE,
