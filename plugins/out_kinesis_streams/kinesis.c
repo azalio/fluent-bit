@@ -113,6 +113,10 @@ static int cb_kinesis_init(struct flb_output_instance *ins,
         ctx->custom_endpoint = FLB_FALSE;
     }
 
+    tmp = flb_output_get_property("sts_endpoint", ins);
+    if (tmp) {
+        ctx->sts_endpoint = (char *) tmp;
+
     /*
      * Sets the port number for the Kinesis output plugin.
      *
