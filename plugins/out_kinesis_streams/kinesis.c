@@ -125,12 +125,15 @@ static int cb_kinesis_init(struct flb_output_instance *ins,
      * @return None.
      */
     tmp = flb_output_get_property("port", ins);
+    flb_plg_debug(ins, "Retrieved port property: %s", tmp ? tmp : "NULL");
+    
     if (tmp) {
         long port;
         char *endptr = NULL;
         port = strtol(tmp, &endptr, 10);
         if (*endptr == '\0' && port > 0 && port <= 65535) {
             ctx->port = (int) port;
+            flb_plg_debug(ins, "Setting port to: %d", ctx->port);
         }
         else {
             flb_plg_error(ins, "Invalid port number: %s", tmp);
@@ -139,11 +142,7 @@ static int cb_kinesis_init(struct flb_output_instance *ins,
     }
     else {
         ctx->port = 443;
-    }
-
-    tmp = flb_output_get_property("sts_endpoint", ins);
-    if (tmp) {
-        ctx->sts_endpoint = (char *) tmp;
+        flb_plg_debug(ins, "Setting port to default: %d", ctx->port);
     }
 
 
