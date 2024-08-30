@@ -113,34 +113,9 @@ static int cb_kinesis_init(struct flb_output_instance *ins,
         ctx->custom_endpoint = FLB_FALSE;
     }
 
-    /*
-     * Sets the port number for the Kinesis output plugin.
-     *
-     * This function uses the port number already set in the output instance's host structure.
-     * If the port is not set (0), the default HTTPS port is used.
-     *
-     * @param ins The output instance.
-     * @param ctx The Kinesis output plugin context.
-     */
-    flb_plg_debug(ins, "Retrieved port from ins->host.port: %d", ins->host.port);
-    
-    if (ins->host.port >= FLB_KINESIS_MIN_PORT && ins->host.port <= FLB_KINESIS_MAX_PORT) {
-        ctx->port = ins->host.port;
-        flb_plg_debug(ins, "Setting port to: %d", ctx->port);
-    }
-    else if (ins->host.port == 0) {
-        ctx->port = FLB_KINESIS_DEFAULT_HTTPS_PORT;
-        flb_plg_debug(ins, "Port not set. Using default HTTPS port: %d", ctx->port);
-    }
-    else {
-        flb_plg_error(ins, "Invalid port number: %d. Must be between %d and %d", 
-                      ins->host.port, FLB_KINESIS_MIN_PORT, FLB_KINESIS_MAX_PORT);
-        goto error;
-    }
-
-    tmp = flb_output_get_property("log_key", ins);
+    tmp = flb_output_get_property("sts_endpoint", ins);
     if (tmp) {
-        ctx->log_key = tmp;
+        ctx->sts_endpoint = (char *) tmp;
     }
 
     tmp = flb_output_get_property("region", ins);
@@ -497,6 +472,12 @@ static struct flb_config_map config_map[] = {
      0, FLB_TRUE, offsetof(struct flb_kinesis, profile),
      "AWS Profile name. AWS Profiles can be configured with AWS CLI and are usually stored in "
      "$HOME/.aws/ directory."
+    },
+
+    {
+     FLB_CONFIG_MAP_INT, "port", STR(FLB_KINESIS_DEFAULT_PORT),
+     0, FLB_TRUE, offsetof(struct flb_kinesis, port),
+     "Port number for the Kinesis API endpoint. Default is 443 for HTTPS."
     },
 
     /* EOF */
